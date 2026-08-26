@@ -1,92 +1,109 @@
-library(dplyr)
-library(purrr)
-library(readr)
-library(stringr)
-library(tibble)
+library(tidyverse)
 
-source("R/functions_data_quality.R")
+curated_root <- Sys.getenv("ROLLS_CURATED_DATA")
 
-curated_dir <- Sys.getenv("ROLLS_CURATED_DATA")
-
-if (curated_dir == "") {
-  stop("ROLLS_CURATED_DATA has not been set.")
+if (curated_root == "") {
+  stop(
+    "ROLLS_CURATED_DATA is not set. ",
+    "Check the .Renviron file and restart R."
+  )
 }
 
-if (!dir.exists(curated_dir)) {
-  stop("The curated data folder could not be found.")
+if (!dir.exists(curated_root)) {
+  stop(
+    "ROLLS_CURATED_DATA does not point to an existing folder: ",
+    curated_root
+  )
 }
 
-# Normalize curated directory path once
-normalized_curated <- normalizePath(
-  curated_dir,
-  winslash = "/",
-  mustWork = FALSE
+output_dir <- "outputs"
+
+if (!dir.exists(output_dir)) {
+  dir.create(output_dir, recursive = TRUE)
+}
+
+variable_groups_path <- file.path(
+  output_dir,
+  "variable_groups.csv"
 )
 
-# Read variable classifications
-variable_groups <- read_csv(
-  "outputs/variable_groups.csv",
+if (!file.exists(variable_groups_path)) {
+  stop(
+    "outputs/variable_groups.csv was not found. ",
+    "Run Script 05 first."
+  )
+}
+
+variable_groups <- readr::read_csv(
+  variable_groups_path,
   show_col_types = FALSE
 )
 
-# Find all curated CSV files
-all_csvs <- list.files(
-  path = curated_dir,
+
+data_csvs <- list.files(
+  path = curated_root,
   pattern = "\\.csv$",
   recursive = TRUE,
-  full.names = TRUE
+  full.names = TRUE,
+  ignore.case = TRUE
 )
 
-all_csvs <- normalizePath(
-  all_csvs,
-  winslash = "/",
-  mustWork = FALSE
-)
-
-data_csvs <- all_csvs[
-  str_detect(
-    all_csvs,
-    regex("/data/", ignore_case = TRUE)
+# Only keep CSV files inside a data folder.
+data_csvs <- data_csvs[
+  grepl(
+    "[/\\\\]data[/\\\\]",
+    data_csvs,
+    ignore.case = TRUE
   )
 ]
 
+if (length(data_csvs) == 0) {
+  stop(
+    "No CSV files were found inside data folders under ",
+    curated_root
+  )
+}
 
-get_study_folder <- function(file) {
+get_study_folder <- function(file_path, root_path) {
   
-  normalized_file <- normalizePath(
-    file,
+  root_normalized <- normalizePath(
+    root_path,
     winslash = "/",
     mustWork = FALSE
   )
   
-  relative_path <- str_remove(
-    normalized_file,
-    paste0(
-      "^",
-      fixed(normalized_curated),
-      "/?"
-    )
+  file_normalized <- normalizePath(
+    file_path,
+    winslash = "/",
+    mustWork = FALSE
   )
   
-  study_folder <- str_split(
-    relative_path,
-    "/",
-    simplify = TRUE
-  )[1]
+  relative_path <- sub(
+    paste0(
+      "^",
+      stringr::str_replace_all(
+        root_normalized,
+        "([.()+^$|{}\\[\\]\\\\])",
+        "\\\\\\1"
+      ),
+      "/?"
+    ),
+    "",
+    file_normalized
+  )
   
-  study_folder
+  strsplit(relative_path, "/", fixed = TRUE)[[1]][1]
 }
 
-calculate_group_quality <- function(
-    file,
-    group_name,
-    selected_variables = NULL
-) {
+
+read_data_file <- function(file_path) {
   
-  dat <- read_csv(
-    file,
+  dat <- readr::read_csv(
+    file_path,
     show_col_types = FALSE,
-    col_types = cols(.default = col_character()),
+    col_types = readr::cols(
+      .default = readr::col_character()
+    ),
     na = c(
       "",
       "NA",
@@ -105,239 +122,386 @@ calculate_group_quality <- function(
       across(
         everything(),
         ~ {
-          x <- str_trim(.x)
+          x <- stringr::str_trim(.x)
           x[x == ""] <- NA_character_
           x
         }
       )
     )
   
-  study_folder <- get_study_folder(file)
-  
-  file_name <- basename(file)
+  dat
+}
 
+calculate_quality <- function(dat) {
   
-  if (is.null(selected_variables)) {
+  # Number of variables originally supplied to this function.
+  n_variables_source <- ncol(dat)
+  
+  # No variables at all.
+  if (n_variables_source == 0) {
     
-    analysis_dat <- dat
-    
-  } else {
-    
-    vars_in_file <- intersect(
-      selected_variables,
-      names(dat)
-    )
-    
-    # No variables from this group in this file
-    if (length(vars_in_file) == 0) {
-      return(NULL)
-    }
-    
-    analysis_dat <- dat %>%
-      select(
-        all_of(vars_in_file)
+    return(
+      tibble(
+        n_variables_source = 0L,
+        n_variables_observed = 0L,
+        total_data_points = NA_integer_,
+        total_missing = NA_integer_,
+        percent_missing_overall = NA_real_,
+        mean_percent_missing_participant = NA_real_,
+        min_percent_missing_participant = NA_real_,
+        max_percent_missing_participant = NA_real_,
+        complete_cases = NA_integer_,
+        participants_85_complete = NA_integer_
       )
-  }
-
-  
-  total_cells <- nrow(analysis_dat) * ncol(analysis_dat)
-  
-  total_missing <- sum(
-    is.na(analysis_dat)
-  )
-  
-  percent_missing_overall <- if (total_cells > 0) {
-    round(
-      100 * total_missing / total_cells,
-      2
     )
-  } else {
-    NA_real_
   }
   
-  complete_cases <- sum(
-    complete.cases(analysis_dat)
+  # Determine which variables contain at least one
+  # observed value.
+  observed_variable <- vapply(
+    dat,
+    function(x) any(!is.na(x)),
+    logical(1)
   )
   
+  # Retain only variables that actually contain data.
+  dat_observed <- dat[
+    ,
+    observed_variable,
+    drop = FALSE
+  ]
   
-  if ("id" %in% names(dat)) {
+  n_variables_observed <- ncol(dat_observed)
+  
+  # If every variable in the requested group is completely
+  # empty, there is no meaningful denominator.
+  if (n_variables_observed == 0) {
     
-    participant_dat <- analysis_dat
-    
-    participant_dat$id <- dat$id
-    
-    participant_missing <- participant_dat %>%
-      mutate(
-        .participant_id = as.character(id)
-      ) %>%
-      select(
-        .participant_id,
-        everything(),
-        -id
-      ) %>%
-      mutate(
-        .row_missing = rowSums(
-          is.na(
-            across(
-              -.participant_id
-            )
-          )
-        ),
-        .row_cells = ncol(.) - 1
-      ) %>%
-      group_by(
-        .participant_id
-      ) %>%
-      summarise(
-        missing_cells = sum(
-          .row_missing
-        ),
-        total_cells = sum(
-          .row_cells
-        ),
-        .groups = "drop"
-      ) %>%
-      mutate(
-        percent_missing =
-          100 * missing_cells / total_cells,
-        
-        percent_complete =
-          100 - percent_missing
+    return(
+      tibble(
+        n_variables_source = n_variables_source,
+        n_variables_observed = 0L,
+        total_data_points = NA_integer_,
+        total_missing = NA_integer_,
+        percent_missing_overall = NA_real_,
+        mean_percent_missing_participant = NA_real_,
+        min_percent_missing_participant = NA_real_,
+        max_percent_missing_participant = NA_real_,
+        complete_cases = NA_integer_,
+        participants_85_complete = NA_integer_
       )
-    
-    mean_percent_missing_participant <- round(
-      mean(
-        participant_missing$percent_missing,
-        na.rm = TRUE
-      ),
-      2
     )
-    
-    participant_range <- range(
-      participant_missing$percent_missing,
-      na.rm = TRUE
+  }
+  
+  total_data_points <-
+    nrow(dat_observed) * ncol(dat_observed)
+  
+  total_missing <-
+    sum(is.na(dat_observed))
+  
+  percent_missing_overall <-
+    ifelse(
+      total_data_points > 0,
+      100 * total_missing / total_data_points,
+      NA_real_
     )
+  
+  if (nrow(dat_observed) > 0) {
     
-    range_percent_missing_participant <- paste0(
-      round(
-        participant_range[1],
-        2
-      ),
-      "% - ",
-      round(
-        participant_range[2],
-        2
-      ),
-      "%"
-    )
+    missing_per_participant <-
+      rowSums(is.na(dat_observed))
     
-    participants_85_percent_complete <- sum(
-      participant_missing$percent_complete >= 85,
-      na.rm = TRUE
-    )
+    percent_missing_participant <-
+      100 *
+      missing_per_participant /
+      ncol(dat_observed)
+    
+    percent_complete_participant <-
+      100 - percent_missing_participant
+    
+    mean_percent_missing_participant <-
+      mean(percent_missing_participant)
+    
+    min_percent_missing_participant <-
+      min(percent_missing_participant)
+    
+    max_percent_missing_participant <-
+      max(percent_missing_participant)
+    
+    complete_cases <-
+      sum(missing_per_participant == 0)
+    
+    participants_85_complete <-
+      sum(percent_complete_participant >= 85)
     
   } else {
     
     mean_percent_missing_participant <- NA_real_
-    
-    range_percent_missing_participant <- NA_character_
-    
-    participants_85_percent_complete <- NA_integer_
+    min_percent_missing_participant <- NA_real_
+    max_percent_missing_participant <- NA_real_
+    complete_cases <- NA_integer_
+    participants_85_complete <- NA_integer_
   }
-
   
   tibble(
-    study_folder = study_folder,
-    file_name = file_name,
-    data_group = group_name,
-    n_variables = ncol(analysis_dat),
-    total_missing = total_missing,
-    percent_missing_overall = percent_missing_overall,
+    n_variables_source =
+      as.integer(n_variables_source),
+    
+    n_variables_observed =
+      as.integer(n_variables_observed),
+    
+    total_data_points =
+      as.integer(total_data_points),
+    
+    total_missing =
+      as.integer(total_missing),
+    
+    percent_missing_overall =
+      round(percent_missing_overall, 2),
+    
     mean_percent_missing_participant =
-      mean_percent_missing_participant,
-    range_percent_missing_participant =
-      range_percent_missing_participant,
-    complete_cases = complete_cases,
-    participants_85_percent_complete =
-      participants_85_percent_complete
+      round(mean_percent_missing_participant, 2),
+    
+    min_percent_missing_participant =
+      round(min_percent_missing_participant, 2),
+    
+    max_percent_missing_participant =
+      round(max_percent_missing_participant, 2),
+    
+    complete_cases =
+      as.integer(complete_cases),
+    
+    participants_85_complete =
+      as.integer(participants_85_complete)
   )
 }
 
 
-
-grouped_quality <- map_dfr(
-  data_csvs,
-  function(file) {
+calculate_group_quality <- function(
+    dat,
+    variable_names,
+    study_folder,
+    file_name,
+    data_group
+) {
+  
+  # Keep only variables that actually exist in this CSV.
+  variable_names <- intersect(
+    variable_names,
+    names(dat)
+  )
+  
+  # If the group does not exist in this dataset, return
+  # an NA row rather than pretending it has zero missingness.
+  if (length(variable_names) == 0) {
     
-    file_name <- basename(file)
-    
-    study_folder <- get_study_folder(file)
-    
-    # Match classifications by BOTH study and filename
-    file_variable_groups <- variable_groups %>%
-      filter(
-        .data$study_folder == study_folder,
-        .data$file_name == file_name
-      )
-    
-    intake_vars <- file_variable_groups %>%
-      filter(
-        variable_group == "intake"
-      ) %>%
-      pull(
-        variable_name
-      ) %>%
-      unique()
-    
-    questionnaire_vars <- file_variable_groups %>%
-      filter(
-        variable_group == "questionnaire"
-      ) %>%
-      pull(
-        variable_name
-      ) %>%
-      unique()
-    
-    total_intake_vars <- file_variable_groups %>%
-      filter(
-        variable_group == "total_intake"
-      ) %>%
-      pull(
-        variable_name
-      ) %>%
-      unique()
-    
-    bind_rows(
-      
-      calculate_group_quality(
-        file = file,
-        group_name = "All data",
-        selected_variables = NULL
-      ),
-      
-      calculate_group_quality(
-        file = file,
-        group_name = "Intake data",
-        selected_variables = intake_vars
-      ),
-      
-      calculate_group_quality(
-        file = file,
-        group_name = "Questionnaire data",
-        selected_variables = questionnaire_vars
-      ),
-      
-      calculate_group_quality(
-        file = file,
-        group_name = "Total intake variables",
-        selected_variables = total_intake_vars
+    return(
+      tibble(
+        study_folder = study_folder,
+        file_name = file_name,
+        data_group = data_group,
+        n_variables_source = 0L,
+        n_variables_observed = 0L,
+        total_data_points = NA_integer_,
+        total_missing = NA_integer_,
+        percent_missing_overall = NA_real_,
+        mean_percent_missing_participant = NA_real_,
+        min_percent_missing_participant = NA_real_,
+        max_percent_missing_participant = NA_real_,
+        complete_cases = NA_integer_,
+        participants_85_complete = NA_integer_
       )
     )
   }
+  
+  group_data <- dat %>%
+    select(all_of(variable_names))
+  
+  calculate_quality(group_data) %>%
+    mutate(
+      study_folder = study_folder,
+      file_name = file_name,
+      data_group = data_group,
+      .before = 1
+    )
+}
+
+
+quality_results <- vector(
+  mode = "list",
+  length = length(data_csvs)
 )
 
 
+for (i in seq_along(data_csvs)) {
+  
+  file_path <- data_csvs[i]
+  
+  study_folder <- get_study_folder(
+    file_path,
+    curated_root
+  )
+  
+  file_name <- basename(file_path)
+  
+  message(
+    "[",
+    i,
+    "/",
+    length(data_csvs),
+    "] ",
+    study_folder,
+    " / ",
+    file_name
+  )
+  
+  
+  dat <- tryCatch(
+    read_data_file(file_path),
+    error = function(e) {
+      
+      warning(
+        "Could not read ",
+        file_path,
+        ": ",
+        conditionMessage(e)
+      )
+      
+      NULL
+    }
+  )
+  
+  if (is.null(dat)) {
+    next
+  }
+  
+  
+  file_variable_groups <- variable_groups %>%
+    filter(
+      .data$study_folder == study_folder,
+      .data$file_name == file_name
+    )
+  
+  
+  all_result <- calculate_group_quality(
+    dat = dat,
+    variable_names = names(dat),
+    study_folder = study_folder,
+    file_name = file_name,
+    data_group = "All data"
+  )
+  
+  
+  intake_variables <- file_variable_groups %>%
+    filter(variable_group == "intake") %>%
+    pull(variable_name) %>%
+    unique()
+  
+  intake_result <- calculate_group_quality(
+    dat = dat,
+    variable_names = intake_variables,
+    study_folder = study_folder,
+    file_name = file_name,
+    data_group = "Intake data"
+  )
+  
+  
+  questionnaire_variables <- file_variable_groups %>%
+    filter(variable_group == "questionnaire") %>%
+    pull(variable_name) %>%
+    unique()
+  
+  questionnaire_result <- calculate_group_quality(
+    dat = dat,
+    variable_names = questionnaire_variables,
+    study_folder = study_folder,
+    file_name = file_name,
+    data_group = "Questionnaire data"
+  )
+  
+  
+  total_intake_variables <- file_variable_groups %>%
+    filter(variable_group == "total_intake") %>%
+    pull(variable_name) %>%
+    unique()
+  
+  total_intake_result <- calculate_group_quality(
+    dat = dat,
+    variable_names = total_intake_variables,
+    study_folder = study_folder,
+    file_name = file_name,
+    data_group = "Total intake variables"
+  )
+
+  
+  quality_results[[i]] <- bind_rows(
+    all_result,
+    intake_result,
+    questionnaire_result,
+    total_intake_result
+  )
+}
+
+grouped_quality <- bind_rows(
+  quality_results
+)
+
 grouped_quality <- grouped_quality %>%
+  mutate(
+    percent_missing_range = case_when(
+      
+      is.na(min_percent_missing_participant) |
+        is.na(max_percent_missing_participant) ~ NA_character_,
+      
+      TRUE ~ paste0(
+        format(
+          round(
+            min_percent_missing_participant,
+            2
+          ),
+          trim = TRUE
+        ),
+        "% - ",
+        format(
+          round(
+            max_percent_missing_participant,
+            2
+          ),
+          trim = TRUE
+        ),
+        "%"
+      )
+    )
+  )
+
+grouped_quality <- grouped_quality %>%
+  select(
+    study_folder,
+    file_name,
+    data_group,
+    
+    # Useful for diagnosing structural empty variables.
+    n_variables_source,
+    
+    # Number actually used in quality calculations.
+    n_variables_observed,
+    
+    # Denominator first.
+    total_data_points,
+    
+    # Numerator second.
+    total_missing,
+    
+    percent_missing_overall,
+    mean_percent_missing_participant,
+    percent_missing_range,
+    complete_cases,
+    participants_85_complete,
+    
+    # Keep underlying range components for later aggregation.
+    min_percent_missing_participant,
+    max_percent_missing_participant
+  ) %>%
   arrange(
     study_folder,
     file_name,
@@ -353,25 +517,66 @@ grouped_quality <- grouped_quality %>%
   )
 
 
-View(grouped_quality)
-
-write_csv(
+readr::write_csv(
   grouped_quality,
-  "outputs/grouped_data_quality.csv",
+  file.path(
+    output_dir,
+    "grouped_data_quality.csv"
+  ),
   na = ""
 )
 
+cat(
+  "\nScript 06 complete.\n",
+  "Created: outputs/grouped_data_quality.csv\n\n",
+  sep = ""
+)
+
+cat(
+  "\n1992_eatdis_deprivation dataset-level check:\n\n"
+)
+
 grouped_quality %>%
+  filter(
+    study_folder == "1992_eatdis_deprivation",
+    data_group == "All data"
+  ) %>%
+  arrange(
+    desc(percent_missing_overall)
+  ) %>%
+  select(
+    file_name,
+    n_variables_source,
+    n_variables_observed,
+    total_data_points,
+    total_missing,
+    percent_missing_overall
+  ) %>%
+  print(n = Inf)
+
+cat(
+  "\nFiles containing completely empty variables:\n\n"
+)
+
+grouped_quality %>%
+  filter(
+    data_group == "All data",
+    n_variables_source > n_variables_observed
+  ) %>%
+  mutate(
+    n_completely_empty_variables =
+      n_variables_source - n_variables_observed
+  ) %>%
   select(
     study_folder,
     file_name,
-    data_group,
-    n_variables,
-    total_missing,
-    percent_missing_overall,
-    mean_percent_missing_participant,
-    range_percent_missing_participant,
-    complete_cases,
-    participants_85_percent_complete
+    n_variables_source,
+    n_variables_observed,
+    n_completely_empty_variables,
+    percent_missing_overall
   ) %>%
-  print(n = 40)
+  arrange(
+    study_folder,
+    file_name
+  ) %>%
+  print(n = Inf)
