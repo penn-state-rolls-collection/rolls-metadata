@@ -1,16 +1,16 @@
 study_folder,file_name,n_rows,n_variables,total_missing,percent_missing_overall,mean_percent_missing_participant,range_percent_missing_participant,complete_cases,participants_85_percent_complete,intake_macros_computed
 1988_whole_vs_parts,assay-intake_data.csv,102,18,0,0,0,0% - 0%,102,51,No
 1990_eatdis_salad_preload,assay-hunger_data.csv,324,5,0,0,0,0% - 0%,324,28,No
-1990_eatdis_salad_preload,assay-intake_cond-highcal_data.csv,108,44,0,0,0,0% - 0%,108,27,No
+1990_eatdis_salad_preload,assay-intake_cond-highcal_data.csv,108,44,4,0.08,0.08,0% - 1.14%,105,27,No
 1990_eatdis_salad_preload,assay-sss_calc-diff_data.csv,81,48,135,3.47,3.47,3.47% - 3.47%,54,27,No
-1990_sociofeed_dannys_dinner,assay-intake_data.csv,160,108,192,1.11,1.11,0% - 19.44%,128,76,Yes
+1990_sociofeed_dannys_dinner,assay-intake_data.csv,160,108,207,1.2,1.2,0% - 19.44%,120,76,Yes
 1990_sss_age_yogurt,assay-demo_data.csv,96,14,0,0,0,0% - 0%,96,96,No
 1990_sss_age_yogurt,assay-foodpref_data.csv,96,132,367,2.9,2.9,0% - 42.42%,64,89,No
-1990_sss_age_yogurt,assay-sss_data.csv,192,110,33,0.16,0.16,0% - 1.36%,169,96,No
+1990_sss_age_yogurt,assay-sss_data.csv,192,110,34,0.16,0.16,0% - 1.36%,169,96,No
 1990_sss_age_yogurt,assay-upsit_data.csv,96,44,10,0.24,0.24,0% - 6.82%,89,96,No
 1991_eatdis,assay-demo_data.csv,180,13,613,26.2,26.2,3.85% - 69.23%,17,28,No
 1991_eatdis,assay-questionnaire_data.csv,172,16,1434,52.11,52.11,37.5% - 68.75%,0,0,No
-1991_eatdis,study-cafeteria_assay-intake_data.csv,86,67,0,0,0,0% - 0%,86,43,Yes
+1991_eatdis,study-cafeteria_assay-intake_data.csv,86,67,1,0.02,0.02,0% - 0.75%,85,43,Yes
 1991_eatdis,study-cafeteria_calc-timedif_data.csv,43,16,0,0,0,0% - 0%,43,43,Yes
 1991_eatdis,study-foodpref_assay-foodq_data.csv,140,103,127,0.88,0.88,0% - 17.48%,124,69,No
 1991_eatdis,study-foodpref_calc-foodinfo_data.csv,50,6,68,22.67,,,33,,No

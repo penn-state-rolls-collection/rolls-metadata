@@ -27,9 +27,9 @@ study_folder,file_name,data_group,n_variables_source,n_variables_observed,total_
 1990_sss_age_yogurt,assay-foodpref_data.csv,Intake data,0,0,,,,,,,,,
 1990_sss_age_yogurt,assay-foodpref_data.csv,Questionnaire data,132,132,12672,367,2.9,2.9,0.00% - 42.42%,64,89,0,42.42
 1990_sss_age_yogurt,assay-foodpref_data.csv,Total intake variables,0,0,,,,,,,,,
-1990_sss_age_yogurt,assay-sss_data.csv,All data,110,110,21120,33,0.16,0.16,0.00% - 2.73%,169,192,0,2.73
+1990_sss_age_yogurt,assay-sss_data.csv,All data,110,110,21120,34,0.16,0.16,0.00% - 2.73%,169,192,0,2.73
 1990_sss_age_yogurt,assay-sss_data.csv,Intake data,0,0,,,,,,,,,
-1990_sss_age_yogurt,assay-sss_data.csv,Questionnaire data,110,110,21120,33,0.16,0.16,0.00% - 2.73%,169,192,0,2.73
+1990_sss_age_yogurt,assay-sss_data.csv,Questionnaire data,110,110,21120,34,0.16,0.16,0.00% - 2.73%,169,192,0,2.73
 1990_sss_age_yogurt,assay-sss_data.csv,Total intake variables,0,0,,,,,,,,,
 1990_sss_age_yogurt,assay-upsit_data.csv,All data,44,44,4224,10,0.24,0.24,0.00% - 6.82%,89,96,0,6.82
 1990_sss_age_yogurt,assay-upsit_data.csv,Intake data,0,0,,,,,,,,,
@@ -43,10 +43,10 @@ study_folder,file_name,data_group,n_variables_source,n_variables_observed,total_
 1991_eatdis,assay-questionnaire_data.csv,Intake data,0,0,,,,,,,,,
 1991_eatdis,assay-questionnaire_data.csv,Questionnaire data,16,16,2752,1434,52.11,52.11,6.25% - 68.75%,0,20,6.25,68.75
 1991_eatdis,assay-questionnaire_data.csv,Total intake variables,0,0,,,,,,,,,
-1991_eatdis,study-cafeteria_assay-intake_data.csv,All data,67,67,5762,0,0,0,0.00% - 0.00%,86,86,0,0
+1991_eatdis,study-cafeteria_assay-intake_data.csv,All data,67,67,5762,1,0.02,0.02,0.00% - 1.49%,85,86,0,1.49
 1991_eatdis,study-cafeteria_assay-intake_data.csv,Intake data,6,6,516,0,0,0,0.00% - 0.00%,86,86,0,0
 1991_eatdis,study-cafeteria_assay-intake_data.csv,Questionnaire data,52,52,4472,0,0,0,0.00% - 0.00%,86,86,0,0
-1991_eatdis,study-cafeteria_assay-intake_data.csv,Total intake variables,2,2,172,0,0,0,0.00% - 0.00%,86,86,0,0
+1991_eatdis,study-cafeteria_assay-intake_data.csv,Total intake variables,2,2,172,1,0.58,0.58,0.00% - 50.00%,85,85,0,50
 1991_eatdis,study-cafeteria_calc-timedif_data.csv,All data,16,16,688,0,0,0,0.00% - 0.00%,43,43,0,0
 1991_eatdis,study-cafeteria_calc-timedif_data.csv,Intake data,0,0,,,,,,,,,
 1991_eatdis,study-cafeteria_calc-timedif_data.csv,Questionnaire data,3,3,129,0,0,0,0.00% - 0.00%,43,43,0,0
