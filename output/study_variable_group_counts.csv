@@ -1,0 +1,21 @@
+study_folder,data_group,files,variables_across_files
+1988_whole_vs_parts,Intake variables,1,3
+1988_whole_vs_parts,Questionnaire data,1,8
+1990_eatdis_salad_preload,Questionnaire data,3,86
+1990_sociofeed_dannys_dinner,Intake variables,1,15
+1990_sociofeed_dannys_dinner,Macronutrient data,1,51
+1990_sociofeed_dannys_dinner,Questionnaire data,1,6
+1990_sss_age_yogurt,Questionnaire data,2,129
+1991_eatdis,Intake variables,1,2
+1991_eatdis,Macronutrient data,4,30
+1991_eatdis,Questionnaire data,3,33
+1991_eatdis_hourly,Questionnaire data,1,90
+1991_eatdis_yogurt,Intake variables,1,10
+1991_eatdis_yogurt,Macronutrient data,1,121
+1991_eatdis_yogurt,Questionnaire data,2,9
+1991_ivig_preload,Intake variables,1,38
+1991_ivig_preload,Macronutrient data,4,163
+1991_ivig_preload,Questionnaire data,2,21
+1992_eatdis_deprivation,Intake variables,1,45
+1992_eatdis_deprivation,Macronutrient data,1,12
+1992_eatdis_deprivation,Questionnaire data,2,15

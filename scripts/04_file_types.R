@@ -37,7 +37,7 @@ file_types <- file_inventory %>%
         )
       ) ~ "questionnaire",
       
-      # VAS / rating files
+      # VAS/rating files
       str_detect(
         file_name,
         regex(
@@ -73,7 +73,7 @@ file_types <- file_inventory %>%
         )
       ) ~ "sss",
       
-      # Smell / UPSIT
+      # Smell/UPSIT
       str_detect(
         file_name,
         regex(

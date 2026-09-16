@@ -13,7 +13,7 @@ study_folder,file_name,n_rows,n_variables,total_missing,percent_missing_overall,
 1991_eatdis,study-cafeteria_assay-intake_data.csv,86,67,1,0.02,0.02,0% - 0.75%,85,43,Yes
 1991_eatdis,study-cafeteria_calc-timedif_data.csv,43,16,0,0,0,0% - 0%,43,43,Yes
 1991_eatdis,study-foodpref_assay-foodq_data.csv,140,103,127,0.88,0.88,0% - 17.48%,124,69,No
-1991_eatdis,study-foodpref_calc-foodinfo_data.csv,50,6,68,22.67,,,33,,No
+1991_eatdis,study-foodpref_calc-foodinfo_data.csv,50,6,68,22.67,NA,NA,33,NA,No
 1991_eatdis,study-foodpref_calc-preference_data.csv,140,15,0,0,0,0% - 0%,140,70,No
 1991_eatdis,study-smell_data.csv,142,11,242,15.49,15.49,0% - 31.82%,38,23,No
 1991_eatdis_hourly,assay-vas_data.csv,111,147,535,3.28,2.97,0% - 19.73%,53,39,No
