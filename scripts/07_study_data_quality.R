@@ -1,7 +1,5 @@
 library(tidyverse)
 
-
-
 curated_root <- Sys.getenv("ROLLS_CURATED_DATA")
 
 if (curated_root == "") {
@@ -18,7 +16,6 @@ if (!dir.exists(curated_root)) {
   )
 }
 
-
 output_dir <- "outputs"
 
 if (!dir.exists(output_dir)) {
@@ -27,7 +24,6 @@ if (!dir.exists(output_dir)) {
     recursive = TRUE
   )
 }
-
 
 variable_groups_path <- file.path(
   output_dir,
@@ -41,12 +37,10 @@ if (!file.exists(variable_groups_path)) {
   )
 }
 
-
 variable_groups <- readr::read_csv(
   variable_groups_path,
   show_col_types = FALSE
 )
-
 
 required_variable_columns <- c(
   "study_folder",
@@ -72,8 +66,6 @@ if (length(missing_variable_columns) > 0) {
   )
 }
 
-
-
 variable_groups <- variable_groups %>%
   filter(
     !(
@@ -88,7 +80,6 @@ variable_groups <- variable_groups %>%
     )
   )
 
-
 data_csvs <- list.files(
   path = curated_root,
   pattern = "\\.csv$",
@@ -96,7 +87,6 @@ data_csvs <- list.files(
   full.names = TRUE,
   ignore.case = TRUE
 )
-
 
 data_csvs <- data_csvs[
   grepl(
@@ -106,8 +96,6 @@ data_csvs <- data_csvs[
   )
 ]
 
-
-# Remove mealtime dataset here too
 data_csvs <- data_csvs[
   !(
     grepl(
@@ -123,20 +111,17 @@ data_csvs <- data_csvs[
   )
 ]
 
-
 if (length(data_csvs) == 0) {
   stop(
     "No CSV files were found inside the curated data folders."
   )
 }
 
-
 normalized_root <- normalizePath(
   curated_root,
   winslash = "/",
   mustWork = FALSE
 )
-
 
 get_study_folder <- function(file_path) {
   
@@ -145,7 +130,6 @@ get_study_folder <- function(file_path) {
     winslash = "/",
     mustWork = FALSE
   )
-  
   
   relative_path <- str_remove(
     normalized_file,
@@ -157,48 +141,33 @@ get_study_folder <- function(file_path) {
     )
   )
   
-  
   pieces <- str_split(
     relative_path,
     "/"
   )[[1]]
   
-  
   pieces[1]
 }
 
-
 file_lookup <- tibble(
-  
-  file_path =
+  file_path = data_csvs,
+  study_folder = map_chr(
     data_csvs,
-  
-  study_folder =
-    map_chr(
-      data_csvs,
-      get_study_folder
-    ),
-  
-  file_name =
-    basename(
-      data_csvs
-    )
+    get_study_folder
+  ),
+  file_name = basename(
+    data_csvs
+  )
 )
-
 
 read_data_file <- function(file_path) {
   
   dat <- readr::read_csv(
-    
     file_path,
-    
     show_col_types = FALSE,
-    
     col_types = readr::cols(
-      .default =
-        readr::col_character()
+      .default = readr::col_character()
     ),
-    
     na = c(
       "",
       "NA",
@@ -209,91 +178,62 @@ read_data_file <- function(file_path) {
       "null",
       "."
     ),
-    
     trim_ws = TRUE
   )
   
-  
   dat <- dat %>%
-    
     mutate(
-      
       across(
-        
         everything(),
-        
         ~ {
-          
           x <- str_trim(.x)
-          
-          x[x == ""] <-
-            NA_character_
-          
+          x[x == ""] <- NA_character_
           x
         }
       )
     )
   
-  
   dat
 }
 
-
 dashboard_groups <- c(
   "All data",
+  "Demographic data",
   "Measured intake",
   "Macronutrient intake",
-  "Total intake",
   "Questionnaire data"
 )
-
 
 get_variable_groups_for_dashboard <- function(
     dashboard_group
 ) {
   
+  if (dashboard_group == "Demographic data") {
+    return(
+      "demographic"
+    )
+  }
+  
   if (dashboard_group == "Measured intake") {
-    
     return(
       "intake"
     )
   }
   
-  
   if (dashboard_group == "Macronutrient intake") {
-    
     return(
       "macronutrient"
     )
   }
   
-  
-  if (dashboard_group == "Total intake") {
-    
-    return(
-      c(
-        "intake",
-        "macronutrient"
-      )
-    )
-  }
-  
-  
   if (dashboard_group == "Questionnaire data") {
-    
     return(
       "questionnaire"
     )
   }
   
-  
   character(0)
 }
-
-
-# ============================================================
-# GET VARIABLES FOR FILE / DASHBOARD GROUP
-# ============================================================
 
 get_group_variables <- function(
     dat,
@@ -302,43 +242,33 @@ get_group_variables <- function(
     dashboard_group
 ) {
   
-  # All data = every variable in the file
   if (dashboard_group == "All data") {
-    
     return(
       names(dat)
     )
   }
-  
   
   wanted_groups <-
     get_variable_groups_for_dashboard(
       dashboard_group
     )
   
-  
   selected_variables <- variable_groups %>%
-    
     filter(
       study_folder == study_name,
       .data$file_name == file_name,
       variable_group %in% wanted_groups
     ) %>%
-    
     pull(
       variable_name
     ) %>%
-    
     unique() %>%
-    
     intersect(
       names(dat)
     )
   
-  
   selected_variables
 }
-
 
 keep_observed_variables <- function(
     dat,
@@ -350,39 +280,30 @@ keep_observed_variables <- function(
     names(dat)
   )
   
-  
   if (length(variable_names) == 0) {
-    
     return(
       character(0)
     )
   }
   
-  
   has_observed_value <- vapply(
-    
     dat[
       ,
       variable_names,
       drop = FALSE
     ],
-    
     function(x) {
-      
       any(
         !is.na(x)
       )
     },
-    
     logical(1)
   )
-  
   
   variable_names[
     has_observed_value
   ]
 }
-
 
 calculate_study_group <- function(
     study_name,
@@ -390,12 +311,9 @@ calculate_study_group <- function(
 ) {
   
   study_files <- file_lookup %>%
-    
     filter(
       study_folder == study_name
     )
-  
-  
   
   all_observed_names <-
     character(0)
@@ -409,14 +327,11 @@ calculate_study_group <- function(
   found_group_data <-
     FALSE
   
-  
   participant_results <-
     list()
   
   participant_counter <-
     1L
-  
-  
   
   for (
     i in seq_len(
@@ -432,15 +347,11 @@ calculate_study_group <- function(
     current_file_name <-
       study_files$file_name[i]
     
-    
     dat <- tryCatch(
-      
       read_data_file(
         current_file
       ),
-      
       error = function(e) {
-        
         warning(
           "Could not read ",
           current_file,
@@ -452,53 +363,33 @@ calculate_study_group <- function(
       }
     )
     
-    
     if (is.null(dat)) {
       next
     }
     
-    
     selected_variables <- get_group_variables(
-      
-      dat =
-        dat,
-      
-      study_name =
-        study_name,
-      
-      file_name =
-        current_file_name,
-      
-      dashboard_group =
-        dashboard_group
+      dat = dat,
+      study_name = study_name,
+      file_name = current_file_name,
+      dashboard_group = dashboard_group
     )
-    
     
     observed_variables <- keep_observed_variables(
-      
-      dat =
-        dat,
-      
-      variable_names =
-        selected_variables
+      dat = dat,
+      variable_names = selected_variables
     )
-    
     
     if (length(observed_variables) == 0) {
       next
     }
     
-    
     found_group_data <-
       TRUE
     
-    
-    # Unique variable names across the study
     all_observed_names <- union(
       all_observed_names,
       observed_variables
     )
-    
     
     current_data <- dat[
       ,
@@ -506,12 +397,10 @@ calculate_study_group <- function(
       drop = FALSE
     ]
     
-    
     total_data_points <-
       total_data_points +
       nrow(current_data) *
       ncol(current_data)
-    
     
     total_missing <-
       total_missing +
@@ -521,25 +410,35 @@ calculate_study_group <- function(
         )
       )
     
+    id_variable <- intersect(
+      c(
+        "id",
+        "ID",
+        "participant_id",
+        "participantid",
+        "subject_id",
+        "subjectid"
+      ),
+      names(dat)
+    )
     
-    
-    if ("id" %in% names(dat)) {
+    if (length(id_variable) > 0) {
+      
+      id_variable <-
+        id_variable[1]
       
       participant_variables <- setdiff(
         observed_variables,
-        "id"
+        id_variable
       )
-      
       
       if (length(participant_variables) > 0) {
         
         current_participants <- tibble(
-          
           participant_id =
             as.character(
-              dat$id
+              dat[[id_variable]]
             ),
-          
           missing_cells =
             rowSums(
               is.na(
@@ -550,7 +449,6 @@ calculate_study_group <- function(
                 ]
               )
             ),
-          
           total_cells =
             rep(
               length(
@@ -561,7 +459,6 @@ calculate_study_group <- function(
               )
             )
         ) %>%
-          
           filter(
             !is.na(
               participant_id
@@ -572,31 +469,24 @@ calculate_study_group <- function(
               )
             )
           ) %>%
-          
           group_by(
             participant_id
           ) %>%
-          
           summarise(
-            
             missing_cells =
               sum(
                 missing_cells
               ),
-            
             total_cells =
               sum(
                 total_cells
               ),
-            
             .groups =
               "drop"
           )
         
-        
         participant_results[[participant_counter]] <-
           current_participants
-        
         
         participant_counter <-
           participant_counter + 1L
@@ -604,49 +494,35 @@ calculate_study_group <- function(
     }
   }
   
-  
   if (!found_group_data) {
     
     return(
       tibble(
-        
         study_folder =
           study_name,
-        
         data_group =
           dashboard_group,
-        
         n_variables_observed =
           0L,
-        
         total_data_points =
           NA_real_,
-        
         total_missing =
           NA_real_,
-        
         percent_missing_overall =
           NA_real_,
-        
         percent_data_present =
           NA_real_,
-        
         mean_percent_missing_participant =
           NA_real_,
-        
         range_percent_missing_participant =
           NA_character_,
-        
         complete_cases =
           NA_integer_,
-        
         participants_85_percent_complete =
           NA_integer_
       )
     )
   }
-  
-  
   
   percent_missing_overall <-
     if (
@@ -664,7 +540,6 @@ calculate_study_group <- function(
       
       NA_real_
     }
-  
   
   percent_data_present <-
     if (
@@ -684,7 +559,6 @@ calculate_study_group <- function(
       )
     }
   
-  
   mean_percent_missing_participant <-
     NA_real_
   
@@ -697,49 +571,38 @@ calculate_study_group <- function(
   participants_85_percent_complete <-
     NA_integer_
   
-  
   if (length(participant_results) > 0) {
     
     participant_summary <- bind_rows(
       participant_results
     ) %>%
-      
       group_by(
         participant_id
       ) %>%
-      
       summarise(
-        
         missing_cells =
           sum(
             missing_cells
           ),
-        
         total_cells =
           sum(
             total_cells
           ),
-        
         .groups =
           "drop"
       ) %>%
-      
       filter(
         total_cells > 0
       ) %>%
-      
       mutate(
-        
         percent_missing =
           100 *
           missing_cells /
           total_cells,
-        
         percent_complete =
           100 -
           percent_missing
       )
-    
     
     if (nrow(participant_summary) > 0) {
       
@@ -752,12 +615,10 @@ calculate_study_group <- function(
           2
         )
       
-      
       participant_range <- range(
         participant_summary$percent_missing,
         na.rm = TRUE
       )
-      
       
       range_percent_missing_participant <-
         paste0(
@@ -773,13 +634,11 @@ calculate_study_group <- function(
           "%"
         )
       
-      
       complete_cases <-
         sum(
           participant_summary$percent_missing == 0,
           na.rm = TRUE
         )
-      
       
       participants_85_percent_complete <-
         sum(
@@ -789,52 +648,39 @@ calculate_study_group <- function(
     }
   }
   
-  
   tibble(
-    
     study_folder =
       study_name,
-    
     data_group =
       dashboard_group,
-    
     n_variables_observed =
       as.integer(
         length(
           all_observed_names
         )
       ),
-    
     total_data_points =
       as.numeric(
         total_data_points
       ),
-    
     total_missing =
       as.numeric(
         total_missing
       ),
-    
     percent_missing_overall =
       percent_missing_overall,
-    
     percent_data_present =
       percent_data_present,
-    
     mean_percent_missing_participant =
       mean_percent_missing_participant,
-    
     range_percent_missing_participant =
       range_percent_missing_participant,
-    
     complete_cases =
       complete_cases,
-    
     participants_85_percent_complete =
       participants_85_percent_complete
   )
 }
-
 
 all_studies <- sort(
   unique(
@@ -842,11 +688,9 @@ all_studies <- sort(
   )
 )
 
-
 study_results <- list()
 
 result_counter <- 1L
-
 
 for (
   current_study in all_studies
@@ -858,44 +702,34 @@ for (
     
     study_results[[result_counter]] <-
       calculate_study_group(
-        
         study_name =
           current_study,
-        
         dashboard_group =
           current_group
       )
-    
     
     result_counter <-
       result_counter + 1L
   }
 }
 
-
 study_data_quality <- bind_rows(
   study_results
 )
 
-
 macro_status <- variable_groups %>%
-  
   group_by(
     study_folder
   ) %>%
-  
   summarise(
-    
     has_measured_intake =
       any(
         variable_group == "intake"
       ),
-    
     has_macronutrient =
       any(
         variable_group == "macronutrient"
       ),
-    
     has_carbohydrate =
       any(
         variable_group == "macronutrient" &
@@ -907,7 +741,6 @@ macro_status <- variable_groups %>%
             )
           )
       ),
-    
     has_fat =
       any(
         variable_group == "macronutrient" &
@@ -919,7 +752,6 @@ macro_status <- variable_groups %>%
             )
           )
       ),
-    
     has_protein =
       any(
         variable_group == "macronutrient" &
@@ -931,59 +763,45 @@ macro_status <- variable_groups %>%
             )
           )
       ),
-    
     .groups =
       "drop"
   ) %>%
-  
   mutate(
-    
     intake_macros_computed =
       case_when(
-        
         has_carbohydrate &
           has_fat &
           has_protein ~
           "Yes",
-        
         has_measured_intake |
           has_macronutrient ~
           "No",
-        
         TRUE ~
           NA_character_
       )
   ) %>%
-  
   select(
     study_folder,
     intake_macros_computed
   )
 
-
 study_data_quality <- study_data_quality %>%
-  
   left_join(
     macro_status,
     by = "study_folder"
   )
 
-
 study_data_quality <- study_data_quality %>%
-  
   mutate(
-    
     data_group = factor(
       data_group,
       levels = dashboard_groups
     )
   ) %>%
-  
   arrange(
     study_folder,
     data_group
   ) %>%
-  
   mutate(
     data_group =
       as.character(
@@ -991,58 +809,35 @@ study_data_quality <- study_data_quality %>%
       )
   )
 
-
 study_data_quality <- study_data_quality %>%
-  
   select(
-    
     study_folder,
-    
     data_group,
-    
     n_variables_observed,
-    
     total_data_points,
-    
     total_missing,
-    
     percent_missing_overall,
-    
     percent_data_present,
-    
     mean_percent_missing_participant,
-    
     range_percent_missing_participant,
-    
     complete_cases,
-    
     participants_85_percent_complete,
-    
     intake_macros_computed
   )
 
-
 readr::write_csv(
-  
   study_data_quality,
-  
   file.path(
     output_dir,
     "study_data_quality.csv"
   ),
-  
   na = ""
 )
 
-
-
-
 mealtime_check <- file_lookup %>%
-  
   filter(
     study_folder ==
       "1992_eatdis_deprivation",
-    
     str_detect(
       file_name,
       regex(
@@ -1052,21 +847,74 @@ mealtime_check <- file_lookup %>%
     )
   )
 
-
 if (nrow(mealtime_check) == 0) {
-  
   cat(
     "GOOD: 1992 EatDis mealtime dataset is excluded.\n"
   )
-  
 } else {
-  
   cat(
     "WARNING: 1992 EatDis mealtime dataset is still present.\n"
   )
 }
 
+total_intake_check <- study_data_quality %>%
+  filter(
+    data_group ==
+      "Total intake"
+  )
 
+if (nrow(total_intake_check) == 0) {
+  cat(
+    "GOOD: Total intake row has been removed.\n"
+  )
+} else {
+  cat(
+    "WARNING: Total intake row is still present.\n"
+  )
+}
+
+demographic_check <- study_data_quality %>%
+  filter(
+    data_group ==
+      "Demographic data",
+    n_variables_observed > 0
+  )
+
+if (nrow(demographic_check) > 0) {
+  cat(
+    "GOOD: Demographic data are present in the study-level summary.\n"
+  )
+} else {
+  cat(
+    "WARNING: No demographic data were detected in the study-level summary.\n"
+  )
+}
+
+sex_check <- variable_groups %>%
+  filter(
+    str_to_lower(
+      variable_name
+    ) %in% c(
+      "sex",
+      "gender"
+    )
+  )
+
+if (
+  nrow(sex_check) > 0 &&
+  all(
+    sex_check$variable_group ==
+    "demographic"
+  )
+) {
+  cat(
+    "GOOD: Sex/gender variables remain classified as demographic.\n"
+  )
+} else {
+  cat(
+    "WARNING: Some sex/gender variables are not classified as demographic.\n"
+  )
+}
 
 get_group_count <- function(
     study_name,
@@ -1074,24 +922,21 @@ get_group_count <- function(
 ) {
   
   result <- study_data_quality %>%
-    
     filter(
-      study_folder == study_name,
-      data_group == group_name
+      study_folder ==
+        study_name,
+      data_group ==
+        group_name
     )
   
-  
   if (nrow(result) != 1) {
-    
     return(
       NA_integer_
     )
   }
   
-  
   result$n_variables_observed[1]
 }
-
 
 check_group <- function(
     study_name,
@@ -1100,12 +945,12 @@ check_group <- function(
 ) {
   
   result <- study_data_quality %>%
-    
     filter(
-      study_folder == study_name,
-      data_group == group_name
+      study_folder ==
+        study_name,
+      data_group ==
+        group_name
     )
-  
   
   if (
     nrow(result) == 1 &&
@@ -1125,7 +970,7 @@ check_group <- function(
       group_name,
       " = ",
       result$n_variables_observed[1],
-      " variables, ",
+      " unique variables, ",
       result$total_data_points[1],
       " data points.\n",
       sep = ""
@@ -1144,122 +989,127 @@ check_group <- function(
   }
 }
 
+check_group(
+  "1991_eatdis",
+  "Demographic data",
+  "1991 EatDis"
+)
 
+check_group(
+  "1991_eatdis",
+  "Measured intake",
+  "1991 EatDis"
+)
 
-check_total_intake <- function(
-    study_name,
-    display_name
-) {
-  
-  measured_n <- get_group_count(
-    study_name,
-    "Measured intake"
+check_group(
+  "1991_eatdis",
+  "Macronutrient intake",
+  "1991 EatDis"
+)
+
+check_group(
+  "1991_eatdis",
+  "Questionnaire data",
+  "1991 EatDis"
+)
+
+check_group(
+  "1991_ivig_preload",
+  "Demographic data",
+  "1991 IVIG preload"
+)
+
+check_group(
+  "1991_ivig_preload",
+  "Measured intake",
+  "1991 IVIG preload"
+)
+
+check_group(
+  "1991_ivig_preload",
+  "Macronutrient intake",
+  "1991 IVIG preload"
+)
+
+check_group(
+  "1991_ivig_preload",
+  "Questionnaire data",
+  "1991 IVIG preload"
+)
+
+check_group(
+  "1992_eatdis_deprivation",
+  "Demographic data",
+  "1992 EatDis deprivation"
+)
+
+check_group(
+  "1992_eatdis_deprivation",
+  "Measured intake",
+  "1992 EatDis deprivation"
+)
+
+check_group(
+  "1992_eatdis_deprivation",
+  "Macronutrient intake",
+  "1992 EatDis deprivation"
+)
+
+check_group(
+  "1992_eatdis_deprivation",
+  "Questionnaire data",
+  "1992 EatDis deprivation"
+)
+
+expected_groups <- c(
+  "All data",
+  "Demographic data",
+  "Measured intake",
+  "Macronutrient intake",
+  "Questionnaire data"
+)
+
+unexpected_groups <- study_data_quality %>%
+  filter(
+    !data_group %in%
+      expected_groups
   )
-  
-  
-  macro_n <- get_group_count(
-    study_name,
-    "Macronutrient intake"
+
+if (nrow(unexpected_groups) == 0) {
+  cat(
+    "GOOD: Study-level summary contains only the five expected data groups.\n"
   )
-  
-  
-  total_n <- get_group_count(
-    study_name,
-    "Total intake"
+} else {
+  cat(
+    "WARNING: Unexpected data groups are present in the study-level summary.\n"
   )
-  
-  
-  if (
-    !is.na(measured_n) &&
-    !is.na(macro_n) &&
-    !is.na(total_n) &&
-    total_n ==
-    measured_n +
-    macro_n
-  ) {
-    
-    cat(
-      "GOOD: ",
-      display_name,
-      " total intake = measured intake + macronutrient intake (",
-      measured_n,
-      " + ",
-      macro_n,
-      " = ",
-      total_n,
-      ").\n",
-      sep = ""
-    )
-    
-  } else {
-    
-    cat(
-      "WARNING: ",
-      display_name,
-      " total intake does not equal measured + macronutrient intake.\n",
-      sep = ""
-    )
-  }
 }
 
+group_count_check <- study_data_quality %>%
+  count(
+    study_folder,
+    name = "n_rows"
+  )
 
-check_group(
-  "1991_eatdis",
-  "Measured intake",
-  "1991 EatDis"
-)
-
-
-check_group(
-  "1991_eatdis",
-  "Macronutrient intake",
-  "1991 EatDis"
-)
-
-
-check_group(
-  "1991_eatdis",
-  "Total intake",
-  "1991 EatDis"
-)
-
-
-check_total_intake(
-  "1991_eatdis",
-  "1991 EatDis"
-)
-
-
-
-check_group(
-  "1991_ivig_preload",
-  "Measured intake",
-  "1991 IVIG preload"
-)
-
-
-check_group(
-  "1991_ivig_preload",
-  "Macronutrient intake",
-  "1991 IVIG preload"
-)
-
-
-check_group(
-  "1991_ivig_preload",
-  "Total intake",
-  "1991 IVIG preload"
-)
-
-
-check_total_intake(
-  "1991_ivig_preload",
-  "1991 IVIG preload"
-)
-
+if (
+  nrow(group_count_check) > 0 &&
+  all(
+    group_count_check$n_rows ==
+    length(
+      expected_groups
+    )
+  )
+) {
+  cat(
+    "GOOD: Every study has exactly five study-level summary rows.\n"
+  )
+} else {
+  cat(
+    "WARNING: One or more studies do not have exactly five study-level summary rows.\n"
+  )
+}
 
 study_data_quality %>%
-  
   filter(
     study_folder %in% c(
       "1991_eatdis",
@@ -1267,7 +1117,6 @@ study_data_quality %>%
       "1992_eatdis_deprivation"
     )
   ) %>%
-  
   select(
     study_folder,
     data_group,
@@ -1276,17 +1125,27 @@ study_data_quality %>%
     total_missing,
     percent_missing_overall,
     percent_data_present,
+    mean_percent_missing_participant,
+    range_percent_missing_participant,
+    complete_cases,
+    participants_85_percent_complete,
     intake_macros_computed
   ) %>%
-  
+  arrange(
+    study_folder,
+    factor(
+      data_group,
+      levels =
+        expected_groups
+    )
+  ) %>%
   print(
     n = Inf,
     width = Inf
   )
 
-
 cat(
-  "\nScript 07 complete.\n",
+  "Script 07 complete.\n",
   "Created: outputs/study_data_quality.csv\n",
   sep = ""
 )
