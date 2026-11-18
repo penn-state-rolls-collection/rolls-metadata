@@ -243,8 +243,8 @@ study_folder,file_name,data_group,n_variables,total_data_points,total_missing,pe
 2000_mac_ps,assay-demo_data.csv,Questionnaire data,7,357,0,0,100,0,0% - 0%,51,51
 2000_mac_ps,assay-demo_data.csv,Other data,12,612,0,0,100,0,0% - 0%,51,51
 2000_mac_ps,assay-intake_data.csv,Measured intake,11,2244,118,5.26,94.74,5.26,0% - 9.09%,17,51
-2000_mac_ps,assay-intake_data.csv,Questionnaire data,7,1428,118,8.26,91.74,9.64,0% - 16.67%,17,24
-2000_mac_ps,assay-intake_data.csv,Other data,25,5100,117,2.29,97.71,2.39,0% - 4.17%,17,51
+2000_mac_ps,assay-intake_data.csv,Questionnaire data,6,1224,0,0,100,0,0% - 0%,51,51
+2000_mac_ps,assay-intake_data.csv,Other data,26,5304,235,4.43,95.57,4.61,0% - 8%,17,51
 2000_mac_ps,assay-sss_data.csv,Questionnaire data,28,5712,15,0.26,99.74,0.27,0% - 3.7%,45,51
 2000_mac_ps,assay-sss_data.csv,Other data,4,816,0,0,100,0,0% - 0%,51,51
 2001_edxps,assay-demo_data.csv,Demographic data,2,78,0,0,100,0,0% - 0%,39,39
@@ -275,3 +275,64 @@ study_folder,file_name,data_group,n_variables,total_data_points,total_missing,pe
 2002_plate_size,assay-intake_data.csv,Other data,61,8052,0,0,100,0,0% - 0%,45,45
 2002_plate_size,assay-sss_data.csv,Questionnaire data,33,4356,23,0.53,99.47,0.59,0% - 7.81%,35,45
 2002_plate_size,assay-sss_data.csv,Other data,3,396,0,0,100,0,0% - 0%,45,45
+2008_salad_timing,assay-demo_data.csv,Demographic data,4,204,10,4.9,95.1,3,0% - 100%,47,47
+2008_salad_timing,assay-demo_data.csv,Questionnaire data,8,408,21,5.15,94.85,3.71,0% - 100%,46,46
+2008_salad_timing,assay-demo_data.csv,Other data,19,969,64,6.6,93.4,5,0% - 100%,46,46
+2008_salad_timing,assay-intake_data.csv,Measured intake,26,6448,26,0.4,99.6,0.4,0% - 20%,49,49
+2008_salad_timing,assay-intake_data.csv,Questionnaire data,3,744,1,0.13,99.87,0.2,0% - 10%,49,50
+2008_salad_timing,assay-intake_data.csv,Other data,34,8432,336,3.98,96.02,4.15,3.64% - 18.79%,0,49
+2008_salad_timing,assay-sss_data.csv,Questionnaire data,40,9920,926,9.33,90.67,10.26,8.21% - 94.87%,0,49
+2008_salad_timing,assay-sss_data.csv,Other data,3,744,1,0.13,99.87,0.2,0% - 10%,49,50
+2010_edxps_entree,assay-demo_data.csv,Demographic data,4,200,1,0.5,99.5,0.5,0% - 25%,49,49
+2010_edxps_entree,assay-demo_data.csv,Questionnaire data,6,300,0,0,100,0,0% - 0%,50,50
+2010_edxps_entree,assay-demo_data.csv,Other data,8,400,0,0,100,0,0% - 0%,50,50
+2010_edxps_entree,assay-intake_data.csv,Measured intake,41,12218,0,0,100,0,0% - 0%,50,50
+2010_edxps_entree,assay-intake_data.csv,Macronutrient intake,9,2682,0,0,100,0,0% - 0%,50,50
+2010_edxps_entree,assay-intake_data.csv,Questionnaire data,5,1490,0,0,100,0,0% - 0%,50,50
+2010_edxps_entree,assay-intake_data.csv,Other data,53,15794,102,0.65,99.35,0.66,0.32% - 1.28%,0,50
+2010_edxps_entree,assay-sss_data.csv,Questionnaire data,37,11026,651,5.9,94.1,6.06,4.44% - 10.19%,0,50
+2010_edxps_entree,assay-sss_data.csv,Other data,5,1490,0,0,100,0,0% - 0%,50,50
+2015_ps_choice,assay-demo_data.csv,Demographic data,4,200,0,0,100,0,0% - 0%,50,50
+2015_ps_choice,assay-demo_data.csv,Questionnaire data,6,300,0,0,100,0,0% - 0%,50,50
+2015_ps_choice,assay-demo_data.csv,Other data,10,500,0,0,100,0,0% - 0%,50,50
+2015_ps_choice,assay-intake_data.csv,Measured intake,35,5250,0,0,100,0,0% - 0%,50,50
+2015_ps_choice,assay-intake_data.csv,Questionnaire data,8,1200,0,0,100,0,0% - 0%,50,50
+2015_ps_choice,assay-intake_data.csv,Other data,62,9300,0,0,100,0,0% - 0%,50,50
+2015_ps_choice,assay-sss_data.csv,Questionnaire data,35,5250,30,0.57,99.43,0.59,0% - 5.88%,34,50
+2015_ps_choice,assay-sss_data.csv,Other data,7,1050,0,0,100,0,0% - 0%,50,50
+2017_psxsatiety,assay-demo_data.csv,Demographic data,3,132,1,0.76,99.24,0.76,0% - 33.33%,43,43
+2017_psxsatiety,assay-demo_data.csv,Questionnaire data,1,44,0,0,100,,,,
+2017_psxsatiety,assay-demo_data.csv,Other data,10,440,12,2.73,97.27,3.03,0% - 22.22%,33,43
+2017_psxsatiety,assay-intake_data.csv,Measured intake,2,348,0,0,100,0,0% - 0%,44,44
+2017_psxsatiety,assay-intake_data.csv,Questionnaire data,3,522,0,0,100,0,0% - 0%,44,44
+2017_psxsatiety,assay-intake_data.csv,Other data,12,2088,0,0,100,0,0% - 0%,44,44
+2017_psxsatiety,assay-microstructure_data.csv,Questionnaire data,3,522,0,0,100,0,0% - 0%,44,44
+2017_psxsatiety,assay-microstructure_data.csv,Other data,23,4002,161,4.02,95.98,4.33,0% - 30.3%,36,36
+2017_psxsatiety,assay-questionnaires_data.csv,Questionnaire data,62,2728,1,0.04,99.96,0.04,0% - 1.64%,43,44
+2017_psxsatiety,assay-questionnaires_data.csv,Other data,1,44,0,0,100,,,,
+2017_psxsatiety,assay-sss_data.csv,Questionnaire data,70,12180,19,0.16,99.84,0.16,0% - 1.45%,33,44
+2017_psxsatiety,assay-sss_data.csv,Other data,3,522,0,0,100,0,0% - 0%,44,44
+2017_psxsatiety,assay-sst_data.csv,Questionnaire data,1,44,0,0,100,,,,
+2017_psxsatiety,assay-sst_data.csv,Other data,23,1012,44,4.35,95.65,4.55,0% - 100%,42,42
+2022_psxvariety,assay-demo_data.csv,Demographic data,3,273,85,31.14,68.86,31.14,0% - 66.67%,48,48
+2022_psxvariety,assay-demo_data.csv,Questionnaire data,1,91,0,0,100,,,,
+2022_psxvariety,assay-demo_data.csv,Other data,6,546,42,7.69,92.31,9.23,0% - 20%,49,49
+2022_psxvariety,assay-intake_data.csv,Measured intake,11,3982,502,12.61,87.39,12.61,0% - 29.55%,49,49
+2022_psxvariety,assay-intake_data.csv,Questionnaire data,6,2172,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-intake_data.csv,Other data,16,5792,1103,19.04,80.96,20.29,0% - 46.67%,22,42
+2022_psxvariety,assay-microstructure_data.csv,Questionnaire data,6,1002,0,0,100,0,0% - 0%,42,42
+2022_psxvariety,assay-microstructure_data.csv,Other data,23,3841,145,3.78,96.22,3.92,0% - 19.32%,32,33
+2022_psxvariety,assay-sss_data.csv,Questionnaire data,63,22806,1630,7.15,92.85,7.26,0% - 15.32%,25,90
+2022_psxvariety,assay-sss_data.csv,Other data,6,2172,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-survey_name-aebq_data.csv,Questionnaire data,3,273,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-survey_name-aebq_data.csv,Other data,22,2002,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-survey_name-eat_data.csv,Questionnaire data,7,637,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-survey_name-eat_data.csv,Other data,1,91,0,0,100,,,,
+2022_psxvariety,assay-survey_name-ei_data.csv,Questionnaire data,55,5005,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-survey_name-ei_data.csv,Other data,1,91,0,0,100,,,,
+2022_psxvariety,assay-survey_name-rq_data.csv,Questionnaire data,3,273,42,15.38,84.62,23.08,0% - 50%,49,49
+2022_psxvariety,assay-survey_name-rq_data.csv,Other data,40,3640,168,4.62,95.38,4.73,0% - 10.26%,49,91
+2022_psxvariety,assay-survey_name-tfeq_data.csv,Questionnaire data,3,273,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-survey_name-tfeq_data.csv,Other data,15,1365,0,0,100,0,0% - 0%,91,91
+2022_psxvariety,assay-survey_name-varseek_data.csv,Questionnaire data,1,91,0,0,100,,,,
+2022_psxvariety,assay-survey_name-varseek_data.csv,Other data,11,1001,42,4.2,95.8,4.62,0% - 10%,49,91
